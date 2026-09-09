@@ -1,0 +1,22 @@
+{
+  "description": "One AWS sensor reading. This is the exact record shape every downstream agent should expect from the stream.",
+  "fields": {
+    "station_id": "string, e.g. AWS_001",
+    "timestamp": "string, ISO 8601, e.g. 2025-06-01T14:30:00",
+    "temp": "float, degrees Celsius",
+    "pressure": "float, hPa",
+    "humidity": "float, percent (0-100)",
+    "lat": "float, decimal degrees",
+    "lon": "float, decimal degrees"
+  },
+  "example": {
+    "station_id": "AWS_001",
+    "timestamp": "2025-06-01T14:30:00",
+    "temp": 31.2,
+    "pressure": 1008.4,
+    "humidity": 62.1,
+    "lat": 28.61,
+    "lon": 77.21
+  },
+  "notes": "Ground-truth anomaly labels are NOT part of this record. They live separately in ground_truth_labels.csv so Agent 2 never trains/tests on a stream that secretly contains the answer key."
+}
