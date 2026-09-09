@@ -8,28 +8,27 @@ cache_session = requests_cache.CachedSession('.cache', expire_after=-1)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
 
-# Match the exact stations used in the rest of your pipeline
+# List of 5 stations with exact coordinates
 STATIONS = [
-    {"station_id": "AWS_SANTACRUZ", "name": "Santacruz", "lat": 19.08, "lon": 72.85, "elev": 9},
-    {"station_id": "AWS_COLABA",     "name": "Colaba",    "lat": 18.91, "lon": 72.81, "elev": 11},
-    {"station_id": "AWS_BKC",        "name": "BKC",       "lat": 19.06, "lon": 72.86, "elev": 6},
-    {"station_id": "AWS_THANE",      "name": "Thane",     "lat": 19.20, "lon": 72.96, "elev": 23},
-    {"station_id": "AWS_BYCULLA",    "name": "Byculla",   "lat": 18.97, "lon": 72.83, "elev": 10},
+    {"station_id": "AWS_DIU",       "lat": 20.7141, "lon": 70.9822},
+    {"station_id": "AWS_VERAVAL",   "lat": 20.9077, "lon": 70.3679},
+    {"station_id": "AWS_MAHUVA",    "lat": 21.0901, "lon": 71.7690},
+    {"station_id": "AWS_PORBANDAR", "lat": 21.6422, "lon": 69.6093},
+    {"station_id": "AWS_BHAVNAGAR", "lat": 21.7629, "lon": 72.1533},
 ]
 
-
 url = "https://archive-api.open-meteo.com/v1/archive"
-all_station_data = []
+all_station_dfs = []
 
 for station in STATIONS:
-    print(f"Fetching official data for {station['station_id']}...")
-    
+    print(f"Fetching data for {station['station_id']}...")
+
     params = {
         "latitude": station["lat"],
         "longitude": station["lon"],
-        "start_date": "2005-06-22",
-        "end_date": "2005-08-18",
-        "hourly": ["temperature_2m", "relative_humidity_2m", "surface_pressure"]
+        "start_date": "2021-05-01",
+        "end_date": "2021-05-31",
+        "hourly": ["temperature_2m", "relative_humidity_2m", "surface_pressure"],
     }
 
     responses = openmeteo.weather_api(url, params=params)
@@ -48,7 +47,7 @@ for station in STATIONS:
         inclusive="left"
     )
 
-    # Format dataframe matching schema.json expected by fault_injector.py and replay.py
+    # Column names match schema.json used by fault_injector.py and replay.py
     df_station = pd.DataFrame({
         "station_id": station["station_id"],
         "timestamp": dates.strftime('%Y-%m-%dT%H:%M:%S'),
@@ -58,13 +57,15 @@ for station in STATIONS:
         "lat": station["lat"],
         "lon": station["lon"]
     })
-    
-    all_station_data.append(df_station)
 
-# Combine all stations into a single DataFrame
-final_clean_df = pd.concat(all_station_data, ignore_index=True)
+    all_station_dfs.append(df_station)
 
-# Save directly as clean_dataset.csv so fault_injector.py can read it seamlessly
-output_filename = "clean_dataset.csv"
-final_clean_df.to_csv(output_filename, index=False)
-print(f"Wrote {output_filename} successfully. Ready for fault_injector.py.")
+# Combine into single DataFrame
+final_dataframe = pd.concat(all_station_dfs, ignore_index=True)
+
+# Save as clean_dataset.csv so fault_injector.py can read it directly
+output_csv_path = "clean_dataset.csv"
+final_dataframe.to_csv(output_csv_path, index=False)
+
+print(f"\nSuccessfully generated {output_csv_path} with {len(final_dataframe)} total rows.")
+print("Ready for fault_injector.py.")
