@@ -10,12 +10,13 @@ openmeteo = openmeteo_requests.Client(session=retry_session)
 
 # Match the exact stations used in the rest of your pipeline
 STATIONS = [
-    {"station_id": "AWS_001", "lat": 28.61, "lon": 77.21},  # Delhi
-    {"station_id": "AWS_002", "lat": 19.08, "lon": 72.88},  # Mumbai
-    {"station_id": "AWS_003", "lat": 13.08, "lon": 80.27},  # Chennai
-    {"station_id": "AWS_004", "lat": 22.57, "lon": 88.36},  # Kolkata
-    {"station_id": "AWS_005", "lat": 12.97, "lon": 77.59},  # Bengaluru
+    {"station_id": "AWS_SANTACRUZ", "name": "Santacruz", "lat": 19.08, "lon": 72.85, "elev": 9},
+    {"station_id": "AWS_COLABA",     "name": "Colaba",    "lat": 18.91, "lon": 72.81, "elev": 11},
+    {"station_id": "AWS_BKC",        "name": "BKC",       "lat": 19.06, "lon": 72.86, "elev": 6},
+    {"station_id": "AWS_THANE",      "name": "Thane",     "lat": 19.20, "lon": 72.96, "elev": 23},
+    {"station_id": "AWS_BYCULLA",    "name": "Byculla",   "lat": 18.97, "lon": 72.83, "elev": 10},
 ]
+
 
 url = "https://archive-api.open-meteo.com/v1/archive"
 all_station_data = []
@@ -26,8 +27,8 @@ for station in STATIONS:
     params = {
         "latitude": station["lat"],
         "longitude": station["lon"],
-        "start_date": "2023-05-22",
-        "end_date": "2023-08-18",
+        "start_date": "2005-06-22",
+        "end_date": "2005-08-18",
         "hourly": ["temperature_2m", "relative_humidity_2m", "surface_pressure"]
     }
 
