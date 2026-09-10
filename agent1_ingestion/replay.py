@@ -36,13 +36,17 @@ def main():
         record = {
             "station_id": row["station_id"],
             "timestamp": row["timestamp"],
-            "temp": float(row["temp"]) if row["temp"] != "" else None,
-            "pressure": float(row["pressure"]) if row["pressure"] != "" else None,
-            "humidity": float(row["humidity"]) if row["humidity"] != "" else None,
-            "lat": float(row["lat"]),
-            "lon": float(row["lon"]),
+            "temperature_c": float(row["temperature_c"]) if row["temperature_c"] != "" else None,
+            "pressure_hpa": float(row["pressure_hpa"]) if row["pressure_hpa"] != "" else None,
+            "humidity_pct": float(row["humidity_pct"]) if row["humidity_pct"] != "" else None,
+            "latitude": float(row["latitude"]),
+            "longitude": float(row["longitude"]),
         }
-        print(json.dumps(record))
+        try:
+            print(json.dumps(record))
+        except BrokenPipeError:
+            # downstream reader (e.g. `| head`) stopped listening -- not an error
+            return
         if args.speed > 0:
             time.sleep(args.speed)
 

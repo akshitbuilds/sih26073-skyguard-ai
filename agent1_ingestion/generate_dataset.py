@@ -20,14 +20,20 @@ STATIONS = [
 url = "https://archive-api.open-meteo.com/v1/archive"
 all_station_dfs = []
 
+# NOTE: extended from a single month to a full year so the model actually
+# sees seasonal variation (summer / monsoon / winter), not just May.
+# This window deliberately still includes 16-18 May 2021, when Cyclone
+# Tauktae made landfall near Una/Diu -- see PROTECTED_EVENTS in
+# fault_injector.py, which uses this real event as a genuine-event
+# validation case instead of treating it as ordinary data.
 for station in STATIONS:
     print(f"Fetching data for {station['station_id']}...")
 
     params = {
         "latitude": station["lat"],
         "longitude": station["lon"],
-        "start_date": "2021-05-01",
-        "end_date": "2021-05-31",
+        "start_date": "2021-01-01",
+        "end_date": "2021-12-31",
         "hourly": ["temperature_2m", "relative_humidity_2m", "surface_pressure"],
     }
 
@@ -51,11 +57,11 @@ for station in STATIONS:
     df_station = pd.DataFrame({
         "station_id": station["station_id"],
         "timestamp": dates.strftime('%Y-%m-%dT%H:%M:%S'),
-        "temp": [round(t, 2) for t in temps],
-        "pressure": [round(p, 2) for p in pressures],
-        "humidity": [round(h, 2) for h in humidities],
-        "lat": station["lat"],
-        "lon": station["lon"]
+        "temperature_c": [round(t, 2) for t in temps],
+        "pressure_hpa": [round(p, 2) for p in pressures],
+        "humidity_pct": [round(h, 2) for h in humidities],
+        "latitude": station["lat"],
+        "longitude": station["lon"]
     })
 
     all_station_dfs.append(df_station)
