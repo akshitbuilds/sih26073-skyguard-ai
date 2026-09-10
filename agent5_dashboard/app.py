@@ -115,7 +115,7 @@ with left:
             pickable=True,
             opacity=0.75,
         )
-        view_state = pdk.ViewState(latitude=22.5, longitude=79, zoom=4.0)
+        view_state = pdk.ViewState(latitude=21.22, longitude=70.98, zoom=7.2)
         st.pydeck_chart(pdk.Deck(
             layers=[layer], initial_view_state=view_state,
             tooltip={"text": "{station_id} ({_station_name})\nHealth: {sensor_health_status}\nAnomaly: {anomaly_type}"},

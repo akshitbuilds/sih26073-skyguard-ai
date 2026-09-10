@@ -12,7 +12,7 @@ blending two independent estimators:
 
 The two estimates are blended with weights based on how much of each is
 available:
-  - Both available -> 50/50 (configurable)
+  - Both available -> 15/85 temporal/spatial (see comment below for why)
   - Only temporal available (no nearby healthy stations) -> 100% temporal
   - Only spatial available (no usable history, e.g. dropout at series start) -> 100% spatial
   - Neither available -> falls back to last known-good reading
@@ -28,7 +28,18 @@ CLEAN_LOOKBACK_EXCLUDING_TAIL = 6   # how many pre-fault points to use for the t
 FAULT_TAIL_TO_EXCLUDE = 10          # assume last N points (~2.5h) may be corrupted/drifting
 NEIGHBOR_RADIUS_KM = 800
 MAX_NEIGHBORS = 4
-TEMPORAL_WEIGHT_WHEN_BOTH = 0.5
+TEMPORAL_WEIGHT_WHEN_BOTH = 0.15
+# Tuned against real ground-truth data (agent1_ingestion/): spatial (neighbor
+# IDW) substantially outperforms temporal (self-trend) extrapolation for this
+# station network - measured MAE was ~5-6x lower for spatial across all three
+# fields (see correction_accuracy.py). This makes sense here: stations are
+# close enough (~100-250km, shared coastal climate) for strong spatial
+# correlation, while several fault types (esp. drift) persist for very long
+# windows, which contaminates the "clean" lookback a self-trend fit relies on.
+# Temporal is kept as a real (non-zero) contributor rather than dropped
+# entirely, since it's still a genuine independent signal and the weighting
+# should generalize better than a pure-spatial rule if the sensor network
+# geometry changes (sparser network -> temporal matters more).
 
 # Sanity bounds: max plausible change from the last trusted reading over one
 # correction step. If a temporal extrapolation blows past this, we don't trust

@@ -20,48 +20,27 @@ from schema import ANOMALY_TYPES
 
 random.seed(42)
 
-# 18 real Indian city coordinates used as stand-in AWS station sites
+# The 5 real AWS stations from the live dataset (agent1_ingestion/clean_dataset.csv),
+# Gujarat/Saurashtra coastal region. Real lat/lon - sourced directly from the dataset,
+# not placeholders.
 STATIONS = [
-    ("AWS_DEL01", "New Delhi", 28.6139, 77.2090),
-    ("AWS_MUM02", "Mumbai", 19.0760, 72.8777),
-    ("AWS_BLR03", "Bengaluru", 12.9716, 77.5946),
-    ("AWS_CHN04", "Chennai", 13.0827, 80.2707),
-    ("AWS_KOL05", "Kolkata", 22.5726, 88.3639),
-    ("AWS_HYD06", "Hyderabad", 17.3850, 78.4867),
-    ("AWS_PUN07", "Pune", 18.5204, 73.8567),
-    ("AWS_AHM08", "Ahmedabad", 23.0225, 72.5714),
-    ("AWS_JAI09", "Jaipur", 26.9124, 75.7873),
-    ("AWS_LKO10", "Lucknow", 26.8467, 80.9462),
-    ("AWS_BHU11", "Bhubaneswar", 20.2961, 85.8245),
-    ("AWS_GUW12", "Guwahati", 26.1445, 91.7362),
-    ("AWS_NAG13", "Nagpur", 21.1458, 79.0882),
-    ("AWS_PAT14", "Patna", 25.5941, 85.1376),
-    ("AWS_CHD15", "Chandigarh", 30.7333, 76.7794),
-    ("AWS_TVM16", "Thiruvananthapuram", 8.5241, 76.9366),
-    ("AWS_BHO17", "Bhopal", 23.2599, 77.4126),
-    ("AWS_DEH18", "Dehradun", 30.3165, 78.0322),
+    ("AWS_DIU", "Diu", 20.7141, 70.9822),
+    ("AWS_VERAVAL", "Veraval", 20.9077, 70.3679),
+    ("AWS_MAHUVA", "Mahuva", 21.0901, 71.7690),
+    ("AWS_PORBANDAR", "Porbandar", 21.6422, 69.6093),
+    ("AWS_BHAVNAGAR", "Bhavnagar", 21.7629, 72.1533),
 ]
 
-# Fault injected per station for this demo run. None = clean / genuine-event candidate.
+# Fault injected per station for this demo run. None = clean.
+# Dropout isn't represented live here (only 5 stations) but IS covered in the
+# real correction-accuracy evaluation (see correction_accuracy.py / README),
+# which measures against all 4 real fault types from the labeled dataset.
 FAULT_PLAN = {
-    "AWS_DEL01": "sensor_stuck",
-    "AWS_MUM02": None,
-    "AWS_BLR03": "sensor_drift",
-    "AWS_CHN04": "genuine_event",   # real cyclone-adjacent pressure drop, not a fault
-    "AWS_KOL05": "sensor_spike",
-    "AWS_HYD06": None,
-    "AWS_PUN07": "sensor_dropout",
-    "AWS_AHM08": None,
-    "AWS_JAI09": None,
-    "AWS_LKO10": "sensor_drift",
-    "AWS_BHU11": None,
-    "AWS_GUW12": "sensor_spike",
-    "AWS_NAG13": None,
-    "AWS_PAT14": None,
-    "AWS_CHD15": "sensor_stuck",
-    "AWS_TVM16": None,
-    "AWS_BHO17": None,
-    "AWS_DEH18": None,
+    "AWS_DIU": "sensor_stuck",
+    "AWS_VERAVAL": None,
+    "AWS_MAHUVA": "sensor_drift",
+    "AWS_PORBANDAR": "sensor_spike",
+    "AWS_BHAVNAGAR": "genuine_event",
 }
 
 HISTORY_HOURS = 12
