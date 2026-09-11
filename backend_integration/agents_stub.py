@@ -31,16 +31,28 @@ def agent3_ml_detection_stub(r: StationReading) -> StationReading:
 
 
 def agent4_explainability_stub(r: StationReading) -> StationReading:
+    # Standardized on agent5_dashboard/schema.py's ANOMALY_TYPES, since Agent 5's
+    # real correction.py and dashboard already depend on these exact strings.
+    # Real Agent 4 code must output one of: sensor_stuck, sensor_spike,
+    # sensor_drift, sensor_dropout, genuine_event, none.
+    if r.anomaly_type is not None:
+        # a caller (e.g. a test) already forced a value -- respect it, don't
+        # overwrite. Real Agent 4 code should behave the same way: only set
+        # this if it's not already populated upstream.
+        if r.confidence_score is None:
+            r.confidence_score = 0.7
+        return r
+
     score = (r.spatial_deviation_score or 0) + (r.ml_anomaly_score or 0)
     if score < 0.5:
-        r.anomaly_type = "normal"
+        r.anomaly_type = "none"
         r.confidence_score = 0.9
     elif r.physical_consistency_score and r.physical_consistency_score > 0.8:
         # deviates from neighbors but internally coherent -> lean genuine event, don't suppress
         r.anomaly_type = "genuine_event"
         r.confidence_score = 0.55
     else:
-        r.anomaly_type = random.choice(["sensor_spike", "frozen_value", "comm_error", "drift"])
+        r.anomaly_type = random.choice(["sensor_spike", "sensor_stuck", "sensor_dropout", "sensor_drift"])
         r.confidence_score = round(random.uniform(0.6, 0.9), 2)
 
     r.explanation = Explanation(
@@ -52,16 +64,19 @@ def agent4_explainability_stub(r: StationReading) -> StationReading:
 
 
 def agent5_correction_alert_stub(r: StationReading) -> StationReading:
-    if r.anomaly_type not in ("normal", "genuine_event"):
+    # Only fake a corrected_value if one wasn't already set by the REAL
+    # correction logic (agent5_correction_adapter.py) upstream in main.py.
+    # This stub now only owns alert_severity.
+    if r.corrected_value is None and r.anomaly_type not in ("none", "genuine_event"):
         r.corrected_value = CorrectedValue(
             temperature_c=round(r.temperature_c + random.uniform(-1, 1), 1),
             pressure_hpa=round(r.pressure_hpa + random.uniform(-2, 2), 1),
             humidity_pct=round(min(max(r.humidity_pct + random.uniform(-3, 3), 0), 100), 1),
         )
     severity_map = {
-        "normal": "none", "genuine_event": "high",
-        "sensor_spike": "medium", "frozen_value": "medium",
-        "comm_error": "low", "drift": "low",
+        "none": "none", "genuine_event": "high",
+        "sensor_spike": "medium", "sensor_stuck": "medium",
+        "sensor_dropout": "low", "sensor_drift": "low",
     }
     r.alert_severity = severity_map.get(r.anomaly_type, "low")
     return r
